@@ -1,0 +1,105 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+# HELPER TYPES
+
+scalar Time
+
+type Location {
+  type: String!
+  coordinates: [Float!]!
+}
+
+input LocationInput {
+  coordinates: [Float!]!
+}
+
+input LocationSearch {
+  coordinates: [Float!]!
+  radius: Int!
+}
+
+type Money {
+  currency: String!
+  value: Float!
+}
+
+input MoneyInput {
+  currency: String!
+  value: Float!
+}
+
+# User Types
+type User {
+  id: String
+  email: String!
+  password: String
+  sessionid: String
+  points: Int!
+}
+
+input UserInput {
+  email: String!
+  password: String!
+}
+
+input SessionID {
+  sessionid: String!
+}
+
+input Id {
+  id: String!
+}
+
+input Email {
+  email: String!
+}
+
+# Product Types
+
+type Product {
+  id: String
+  name: String!
+  price: Money!
+  description: String!
+  image: String!
+  author: String!
+  storeName: String!
+  location: Location!
+  createdAt: Time!
+}
+
+input ProductInput {
+  name: String!
+  price: MoneyInput!
+  description: String!
+  image: String!
+  author: String!
+  storeName: String!
+  location: LocationInput!
+}
+
+# Queries
+
+type Query {
+  # Users
+  login(input: UserInput!): User!
+  getUserBySessionId(input: SessionID!): User!
+  getUserById(input: Id!): User!
+
+  #Products
+  getProductsByUser(input: Email!): [Product!]!
+  getProductsByLocation(input: LocationSearch!): [Product!]!
+  getProductById(input: Id!): Product!
+}
+
+#Mutations
+
+type Mutation {
+  #Users
+  createUser(input: UserInput!): User!
+
+  #Products
+  createProduct(input: ProductInput!): Product!
+}
