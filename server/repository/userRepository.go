@@ -92,7 +92,6 @@ func (db collection) SearchUsers(searchParam *bson.M) ([]*model.User, error) {
 		var v *model.User
 		err = cursor.Decode(&v)
 		v.Password = nil
-		v.Sessionid = nil
 		result = append(result, v)
 	}
 	if len(result) == 0 {

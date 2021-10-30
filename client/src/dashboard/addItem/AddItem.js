@@ -7,126 +7,204 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import MenuItem from "@mui/material/MenuItem";
+import { useMutation } from "@apollo/client";
+import { CREATE_PRODUCT } from "../../data/mutations";
+import LoadingView from "../../components/LoadingView";
+import LocationRequestView from "../../components/LocationRequestView";
 
 const currencies = [
-  {
-    value: "USD",
-    label: "$",
-  },
-  {
-    value: "EUR",
-    label: "€",
-  },
-  {
-    value: "BTC",
-    label: "฿",
-  },
-  {
-    value: "JPY",
-    label: "¥",
-  },
+   {
+      value: "C$",
+      label: "C$",
+   },
+   {
+      value: "$",
+      label: "$",
+   },
+
+   {
+      value: "€",
+      label: "€",
+   },
+
+   {
+      value: "CN¥",
+      label: "CN¥",
+   },
+   {
+      value: "JP¥",
+      label: "JP¥",
+   },
 ];
 
-const AddItem = () => {
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get("email"),
-      password: data.get("password"),
-    });
-  };
+const AddItem = ({ location, userId }) => {
+   const [barcode, setBarcode] = useState("");
+   const [manualInput, setManualInput] = useState(true);
+   const [name, setName] = useState("");
+   const [description, setDescription] = useState("");
+   const [price, setPrice] = useState(0);
+   const [currency, setCurrency] = useState("C$");
+   const [storeName, setStoreName] = useState("");
 
-  const [currency, setCurrency] = React.useState("EUR");
+   const handleBarcode = async () => {};
 
-  const handleChange = (event) => {
-    setCurrency(event.target.value);
-  };
+   const [createProduct, { data, error }] = useMutation(CREATE_PRODUCT, {
+      variables: {
+         name: name,
+         price: price,
+         currency: currency,
+         description: description,
+         image: "https://miro.medium.com/max/1400/1*mk1-6aYaf_Bes1E3Imhc0A.jpeg",
+         author: userId,
+         storeName: storeName,
+         location:
+            location && !(location instanceof Error)
+               ? [location.coords.longitude, location.coords.latitude]
+               : [0, 0],
+      },
+   });
 
-  return (
-    <Container
-      component="main"
-      maxWidth="xs"
-      className="center"
-      xs={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <CssBaseline />
-      <Box
-        sx={{
-          marginTop: 8,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
-      >
-        <Typography component="h1" variant="h5">
-          Add Item
-        </Typography>
-        <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
-          <Box display="flex" flexDirection="row">
-            <TextField
-              id="outlined-select-currency"
-              select
-              label="Select"
-              value={currency}
-              onChange={handleChange}
-            >
-              {currencies.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </TextField>
-            <TextField
-              required
-              id="email"
-              label="Email Address"
-              name="email"
-              autoComplete="email"
-              autoFocus
-            />
-          </Box>
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            id="email"
-            label="Email Address"
-            name="email"
-            autoComplete="email"
-            autoFocus
-          />
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            name="password"
-            label="Password"
-            type="password"
-            id="password"
-            autoComplete="current-password"
-          />
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            sx={{ mt: 3, mb: 2 }}
-          >
-            Sign In
-          </Button>
-          <Box display="flex" justifyContent="flex-end">
-            <Link href="/login" variant="body2">
-              {"Already have an account? Login"}
-            </Link>
-          </Box>
-        </Box>
-      </Box>
-    </Container>
-  );
+   if (!location) return <LoadingView />;
+   if (location instanceof Error) return <LocationRequestView />;
+
+   if (!manualInput) {
+      return (
+         <Container>
+            <CssBaseline />
+            <Box>
+               <Typography component="h1" variant="h5">
+                  Add Item
+               </Typography>
+               <Box
+                  component="form"
+                  sx={{ mt: 1, maxWidth: "400px", width: "90%" }}
+               >
+                  <TextField
+                     margin="normal"
+                     required
+                     fullWidth
+                     label="Barcode"
+                     name="barcode"
+                     onChange={(e) => {
+                        setBarcode(e.target.value);
+                     }}
+                  />
+
+                  <Button
+                     fullWidth
+                     variant="contained"
+                     sx={{ mt: 3, mb: 2 }}
+                     onClick={handleBarcode}
+                  >
+                     Next
+                  </Button>
+                  <Box display="flex" justifyContent="flex-end">
+                     <Link
+                        variant="body2"
+                        onClick={() => {
+                           setManualInput(true);
+                        }}
+                     >
+                        {"Manual Input"}
+                     </Link>
+                  </Box>
+               </Box>
+            </Box>
+         </Container>
+      );
+   }
+
+   return (
+      <Container>
+         <CssBaseline />
+         <Box
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            flexDirection="column"
+         >
+            <Typography variant="h4">Add Item</Typography>
+            <Box sx={{ mt: 1, maxWidth: "600px", width: "90%" }}>
+               <TextField
+                  margin="normal"
+                  required
+                  fullWidth
+                  label="Name"
+                  autoFocus
+                  value={name}
+                  onChange={(e) => {
+                     setName(e.target.value);
+                  }}
+               />
+               <Box display="flex" flexDirection="row">
+                  <TextField
+                     margin="normal"
+                     id="outlined-select-currency"
+                     select
+                     label="Currency"
+                     value={currency}
+                     onChange={(e) => {
+                        setCurrency(e.target.value);
+                     }}
+                     sx={{
+                        width: "120px",
+                        textAlign: "center",
+                        marginRight: "20px",
+                     }}
+                  >
+                     {currencies.map((option) => (
+                        <MenuItem key={option.value} value={option.value}>
+                           {option.label}
+                        </MenuItem>
+                     ))}
+                  </TextField>
+                  <TextField
+                     margin="normal"
+                     required
+                     label="Price"
+                     type="number"
+                     fullWidth
+                     value={price}
+                     onChange={(e) => {
+                        setPrice(e.target.value);
+                     }}
+                  />
+               </Box>
+
+               <TextField
+                  margin="normal"
+                  fullWidth
+                  label="Description"
+                  multiline
+                  rows={2}
+                  value={description}
+                  onChange={(e) => {
+                     setDescription(e.target.value);
+                  }}
+               />
+               <TextField
+                  margin="normal"
+                  fullWidth
+                  required
+                  label="Store Name"
+                  value={storeName}
+                  onChange={(e) => {
+                     setStoreName(e.target.value);
+                  }}
+               />
+               <Button
+                  fullWidth
+                  variant="contained"
+                  sx={{ mt: 3, mb: 2 }}
+                  onClick={createProduct}
+                  disabled={(name.length === 0, storeName.length === 0)}
+               >
+                  Add Item
+               </Button>
+            </Box>
+         </Box>
+      </Container>
+   );
 };
 
 export default AddItem;
